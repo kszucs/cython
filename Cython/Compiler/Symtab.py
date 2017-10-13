@@ -2321,6 +2321,7 @@ class CppClassScope(Scope):
     def declare_cfunction(self, name, type, pos,
                           cname=None, visibility='extern', api=0, in_pxd=0,
                           defining=0, modifiers=(), utility_code=None, overridable=False):
+
         class_name = self.name.split('::')[-1]
         if name in (class_name, '__init__') and cname is None:
             cname = "%s__init__%s" % (Naming.func_prefix, class_name)
@@ -2336,6 +2337,16 @@ class CppClassScope(Scope):
                 else:
                     return arg
             type.args = [maybe_ref(arg) for arg in type.args]
+
+            prev_entry = self.lookup_here(name)
+            entry = self.declare(name, cname, type, pos, visibility)
+            if prev_entry:
+                entry.overloaded_alternatives = prev_entry.all_alternatives()
+
+            entry.func_cname = "%s::%s" % (self.type.empty_declaration_code(), cname)
+            self.var_entries.append(entry)
+            type.entry = entry
+            return entry
         elif name == '__dealloc__' and cname is None:
             cname = "%s__dealloc__%s" % (Naming.func_prefix, class_name)
             name = '<del>'

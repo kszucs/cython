@@ -250,3 +250,21 @@ def test_uncopyable_constructor_argument():
     cdef UncopyableConstructorArgument *c = new UncopyableConstructorArgument(
         unique_ptr[vector[int]](new vector[int]()))
     del c
+
+
+cdef cppclass OverloadedConstructor:
+    int i
+
+    __init__():
+        this.i = 0
+
+    __init__(int i):
+        this.i = i
+
+
+def test_overload_constructor():
+    """
+    >>> test_overload_constructor()
+    """
+    cdef OverloadedConstructor c
+    assert c.i == 0
